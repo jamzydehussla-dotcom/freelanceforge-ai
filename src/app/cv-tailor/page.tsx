@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { extractContactInfo } from "@/lib/cv-parse";
 import { exportPDF, exportDOCX, type CvExportData } from "@/lib/export-cv";
 import Sidebar from "@/components/Sidebar";
 import ForgeAI from "@/components/ForgeAI";
@@ -233,7 +234,16 @@ export default function CVTailorPage() {
         setUploadError(data.error || "Upload failed");
       } else {
         setCvText(data.text);
-        setUploadSuccess("Extracted " + data.text.length.toLocaleString() + " characters. You can edit below.");
+        const info = extractContactInfo(data.text);
+        const filled: string[] = [];
+        if (info.email && !pdEmail) { setPdEmail(info.email); filled.push("email"); }
+        if (info.phone && !pdPhone) { setPdPhone(info.phone); filled.push("phone"); }
+        if (info.location && !pdLocation) { setPdLocation(info.location); filled.push("location"); }
+        if (info.linkedin && !pdLinkedin) { setPdLinkedin(info.linkedin); filled.push("LinkedIn"); }
+        if (info.website && !pdWebsite) { setPdWebsite(info.website); filled.push("website"); }
+        const charMsg = "Extracted " + data.text.length.toLocaleString() + " characters.";
+        const fillMsg = filled.length > 0 ? " Auto-filled " + filled.length + " personal detail" + (filled.length > 1 ? "s" : "") + ": " + filled.join(", ") + "." : "";
+        setUploadSuccess(charMsg + fillMsg + " You can edit below.");
       }
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Upload failed");
