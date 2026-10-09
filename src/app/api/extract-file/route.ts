@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
 
   try {
     if (name.endsWith(".pdf")) {
-      // @ts-expect-error - pdf-parse has no TS types
       const pdfParse = (await import("pdf-parse")).default;
       const data = await pdfParse(buffer);
       const text = (data.text || "").trim();
