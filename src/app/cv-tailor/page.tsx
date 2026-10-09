@@ -78,6 +78,9 @@ export default function CVTailorPage() {
   const [refineLoading, setRefineLoading] = useState(false);
   const [refineError, setRefineError] = useState("");
   const [fullName, setFullName] = useState("");
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadSuccess, setUploadSuccess] = useState("");
   const [planLabel, setPlanLabel] = useState("—");
 
   async function runDiagnose() {
@@ -215,6 +218,42 @@ export default function CVTailorPage() {
       return;
     }
     await exportDOCX(data);
+  }
+
+  async function handleFileUpload(file: File) {
+    setUploadLoading(true);
+    setUploadError("");
+    setUploadSuccess("");
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/extract-file", { method: "POST", body: form });
+      const data = await res.json();
+      if (!data.ok) {
+        setUploadError(data.error || "Upload failed");
+      } else {
+        setCvText(data.text);
+        setUploadSuccess("Extracted " + data.text.length.toLocaleString() + " characters. You can edit below.");
+      }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    }
+    setUploadLoading(false);
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files && e.target.files[0];
+    if (file) handleFileUpload(file);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) handleFileUpload(file);
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
   }
 
   function handleClearAll() {
@@ -427,16 +466,32 @@ export default function CVTailorPage() {
               </div>
 
               {mode === "Upload" && (
-                <div className="rounded-xl border border-dashed border-violet-500/30 bg-[#12062a]/40 px-6 py-14 text-center">
-                  <div className="mx-auto h-10 w-10 rounded-full border border-violet-500/30 flex items-center justify-center mb-4">
-                    <div className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
+              <div className="space-y-4">
+                {!cvText ? (
+                  <label onDrop={handleDrop} onDragOver={handleDragOver} className="block cursor-pointer rounded-xl border border-dashed border-violet-500/30 bg-[#12062a]/40 px-6 py-14 text-center hover:border-violet-400/50 transition">
+                    <input type="file" accept=".pdf,.docx,.txt,.md" onChange={handleFileChange} className="hidden" />
+                    <div className="mx-auto h-10 w-10 rounded-full border border-violet-500/30 flex items-center justify-center mb-4">
+                      <div className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
+                    </div>
+                    {uploadLoading ? (<p className="text-sm text-white/85">FORGE is reading your file...</p>) : (<>
+                      <p className="text-sm text-white/75">Drag a PDF or DOCX here - or click to browse.</p>
+                      <p className="text-xs text-violet-200/40 mt-2">Supported: PDF, DOCX, TXT, MD</p>
+                    </>)}
+                  </label>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <p className="text-xs text-cyan-300/85">{uploadSuccess || "File loaded. Edit below if needed."}</p>
+                      <button type="button" onClick={() => { setCvText(""); setUploadSuccess(""); setUploadError(""); }} className="text-xs text-violet-200/60 hover:text-red-400 transition">Remove file</button>
+                    </div>
+                    <textarea rows={12} value={cvText} onChange={(e) => setCvText(e.target.value)} className={inputClass} />
                   </div>
-                  <p className="text-sm text-white/75">Drag a PDF or DOCX here — or click to browse.</p>
-                  <p className="text-xs text-violet-200/40 mt-2">File upload will be enabled in a future update.</p>
-                </div>
-              )}
+                )}
+                {uploadError && (<p className="text-xs text-red-300 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2">{uploadError}</p>)}
+              </div>
+            )}
 
-              {mode === "Paste" && (
+            {mode === "Paste" && (
                 <textarea rows={12} value={cvText} onChange={(e) => setCvText(e.target.value)} placeholder="Paste your existing CV content here..." className={inputClass} />
               )}
 
