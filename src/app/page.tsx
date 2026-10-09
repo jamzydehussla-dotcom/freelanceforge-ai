@@ -1,347 +1,74 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#070b12] text-white">
-      <header className="border-b border-white/10 bg-[#070b12]/90">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <a href="#" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-300/10">
-              <div className="h-5 w-5 rotate-45 rounded-md border-2 border-cyan-300" />
-            </div>
+    <div className="relative min-h-screen overflow-hidden bg-[#0f0524] text-white">
+      <div className="pointer-events-none absolute -top-48 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-violet-600/20 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[420px] w-[420px] rounded-full bg-pink-500/15 blur-[130px]" />
 
-            <div>
-              <div className="text-lg font-bold tracking-tight">
-                Freelance<span className="text-cyan-300">Forge</span>
-              </div>
-              <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-500">
-                AI
-              </div>
-            </div>
-          </a>
-
-          <nav className="hidden gap-8 text-sm text-slate-400 md:flex">
-            <a href="#how-it-works" className="hover:text-white">
-              How It Works
-            </a>
-            <a href="#features" className="hover:text-white">
-              Platform
-            </a>
-            <a href="#intelligence" className="hover:text-white">
-              Intelligence
-            </a>
+      <header className="relative z-10 border-b border-violet-500/10">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <img src="/forge-logo.svg" alt="FORGE" width={26} height={26} className="drop-shadow-[0_0_12px_rgba(139,92,246,0.7)]" />
+            <span className="text-sm font-semibold tracking-[0.2em] text-cyan-300" style={{ textShadow: "0 0 10px rgba(34,211,238,0.6)" }}>FORGE</span>
+          </Link>
+          <nav className="flex items-center gap-5">
+            <Link href="/pricing" className="text-sm text-violet-100/70 hover:text-white transition">Pricing</Link>
+            <Link href="/signin" className="text-sm text-violet-100/70 hover:text-white transition">Sign in</Link>
+            <Link href="/signup" className="text-sm font-semibold text-black px-4 py-1.5 rounded-lg transition hover:brightness-110" style={{ background: "linear-gradient(90deg, #22d3ee, #8b5cf6 50%, #ec4899)", boxShadow: "0 0 22px -6px rgba(34,211,238,0.7)" }}>Get started</Link>
           </nav>
-
-          <a
-            href="/dashboard"
-            className="rounded-xl bg-cyan-300 px-5 py-3 text-sm font-bold text-slate-950 hover:bg-cyan-200"
-          >
-            Enter the Forge
-          </a>
         </div>
       </header>
 
-      <section className="relative overflow-hidden">
-        <div className="absolute left-1/2 top-0 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[140px]" />
-
-        <div className="relative mx-auto max-w-5xl px-6 py-28 text-center">
-          <div className="mx-auto mb-7 inline-flex rounded-full border border-cyan-300/20 bg-cyan-300/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-cyan-200">
-            The Freelance Intelligence System
-          </div>
-
-          <h1 className="text-5xl font-black leading-[1] tracking-[-0.05em] sm:text-6xl md:text-7xl">
-            Don&apos;t just find
-            <br />
-            <span className="text-cyan-300">opportunities.</span>
-            <br />
-            Know what to do with them.
+      <main className="relative z-10">
+        <section className="max-w-2xl mx-auto px-6 pt-20 pb-16 text-center">
+          <p className="text-[11px] tracking-[0.3em] text-cyan-400/80 mb-5">FREELANCE FORGE AI</p>
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1]" style={{ textShadow: "0 0 40px rgba(139,92,246,0.35)" }}>
+            Your career, sharpened by intelligence.
           </h1>
-
-          <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg">
-            FreelanceForge AI helps you discover relevant opportunities,
-            understand where you stand, build stronger applications, and make
-            smarter moves throughout your freelance career.
+          <p className="mt-6 text-base text-violet-200/60 leading-relaxed">
+            Discover opportunities, judge which deserve your time, and position yourself to win them.
           </p>
-
-          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-            <a
-              href="/dashboard"
-              className="rounded-xl bg-cyan-300 px-7 py-4 text-sm font-bold text-slate-950 hover:bg-cyan-200"
-            >
-              Enter the Forge →
-            </a>
-
-            <a
-              href="#how-it-works"
-              className="rounded-xl border border-white/10 bg-white/5 px-7 py-4 text-sm font-bold hover:bg-white/10"
-            >
-              See How It Works
-            </a>
+          <div className="mt-9 flex items-center justify-center gap-3">
+            <Link href="/signup" className="text-sm font-semibold text-black px-6 py-2.5 rounded-lg transition hover:brightness-110" style={{ background: "linear-gradient(90deg, #22d3ee, #8b5cf6 50%, #ec4899)", boxShadow: "0 0 25px -6px rgba(34,211,238,0.7)" }}>Get started</Link>
+            <Link href="/signin" className="text-sm font-medium text-violet-100/80 hover:text-white px-6 py-2.5 rounded-lg border border-violet-500/30 hover:border-violet-400/50 transition">Sign in</Link>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section
-        id="how-it-works"
-        className="border-y border-white/10 bg-white/[0.02]"
-      >
-        <div className="mx-auto max-w-7xl px-6 py-24">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
-            The Forge Method
+        <section className="max-w-4xl mx-auto px-6 pb-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px rounded-2xl overflow-hidden border border-violet-500/15 bg-violet-500/10">
+            <div className="bg-[#12072b]/80 p-6">
+              <p className="text-[10px] tracking-[0.2em] text-cyan-400/70 mb-3 font-mono">01 · DISCOVER</p>
+              <p className="text-sm text-violet-100/70 leading-relaxed">Opportunities filtered to what actually fits you.</p>
+            </div>
+            <div className="bg-[#12072b]/80 p-6">
+              <p className="text-[10px] tracking-[0.2em] text-cyan-400/70 mb-3 font-mono">02 · DECIDE</p>
+              <p className="text-sm text-violet-100/70 leading-relaxed">Judgement, with reasoning — not guesswork.</p>
+            </div>
+            <div className="bg-[#12072b]/80 p-6">
+              <p className="text-[10px] tracking-[0.2em] text-cyan-400/70 mb-3 font-mono">03 · POSITION</p>
+              <p className="text-sm text-violet-100/70 leading-relaxed">CVs and proposals shaped around the opportunity.</p>
+            </div>
+          </div>
+          <p className="text-center text-xs text-violet-200/40 mt-8">
+            Building in the open. Account creation, sign-in and your Command Center are live today.
           </p>
+        </section>
+      </main>
 
-          <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-            From opportunity
-            <span className="text-cyan-300"> to action.</span>
-          </h2>
-
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-7">
-              <p className="text-sm font-black tracking-[0.2em] text-cyan-300">
-                01
-              </p>
-              <h3 className="mt-8 text-2xl font-bold">Discover</h3>
-              <p className="mt-4 leading-7 text-slate-500">
-                Find opportunities that actually align with your skills,
-                experience and direction.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-7">
-              <p className="text-sm font-black tracking-[0.2em] text-cyan-300">
-                02
-              </p>
-              <h3 className="mt-8 text-2xl font-bold">Understand</h3>
-              <p className="mt-4 leading-7 text-slate-500">
-                See the opportunity through Forge Intelligence instead of
-                relying only on the job description.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-7">
-              <p className="text-sm font-black tracking-[0.2em] text-cyan-300">
-                03
-              </p>
-              <h3 className="mt-8 text-2xl font-bold">Execute</h3>
-              <p className="mt-4 leading-7 text-slate-500">
-                Build your proposal, application and strategy around what
-                actually matters.
-              </p>
-            </div>
+      <footer className="relative z-10 border-t border-violet-500/10">
+        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between text-[11px] text-violet-200/40">
+          <div className="flex items-center gap-2">
+            <img src="/forge-logo.svg" alt="" width={14} height={14} className="opacity-70" />
+            <span>Freelance Forge AI · part of the FORGE ecosystem</span>
           </div>
-        </div>
-      </section>
-
-      <section id="features" className="mx-auto max-w-7xl px-6 py-24">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
-          Built Around Your Career
-        </p>
-
-        <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-          More than another
-          <br />
-          <span className="text-slate-500">freelance tool.</span>
-        </h2>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-2">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8">
-            <p className="text-sm font-bold text-cyan-300">01</p>
-            <h3 className="mt-8 text-2xl font-bold">
-              Opportunity Intelligence
-            </h3>
-            <p className="mt-4 leading-7 text-slate-500">
-              See beyond the listing. Understand fit, requirements, gaps and
-              the move worth making.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8">
-            <p className="text-sm font-bold text-cyan-300">02</p>
-            <h3 className="mt-8 text-2xl font-bold">Proposal Studio</h3>
-            <p className="mt-4 leading-7 text-slate-500">
-              Build applications around the actual opportunity instead of
-              sending another generic proposal.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8">
-            <p className="text-sm font-bold text-cyan-300">03</p>
-            <h3 className="mt-8 text-2xl font-bold">Profile Optimizer</h3>
-            <p className="mt-4 leading-7 text-slate-500">
-              Position your experience, skills and professional story before
-              you pitch yourself.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8">
-            <p className="text-sm font-bold text-cyan-300">04</p>
-            <h3 className="mt-8 text-2xl font-bold">Career Strategy</h3>
-            <p className="mt-4 leading-7 text-slate-500">
-              Think beyond the next application and build a direction for your
-              freelance career.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="intelligence"
-        className="border-y border-white/10 bg-[#080e17]"
-      >
-        <div className="mx-auto max-w-7xl px-6 py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
-                Forge Intelligence
-              </p>
-
-              <h2 className="mt-5 text-4xl font-black leading-tight tracking-tight sm:text-5xl">
-                Your career has patterns.
-                <span className="text-cyan-300"> Forge finds them.</span>
-              </h2>
-
-              <p className="mt-6 max-w-xl leading-7 text-slate-500">
-                FreelanceForge is designed to understand the bigger picture:
-                your skills, applications, positioning and career direction.
-              </p>
-
-              <a
-                href="#start"
-                className="mt-8 inline-flex rounded-xl border border-cyan-300/20 bg-cyan-300/5 px-5 py-3 text-sm font-bold text-cyan-200 hover:bg-cyan-300/10"
-              >
-                Ask Forge →
-              </a>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-[#0c131e] p-7">
-              <div className="border-b border-white/10 pb-5">
-                <p className="text-sm font-bold text-cyan-300">
-                  FORGE INSIGHT
-                </p>
-                <p className="mt-2 text-xs text-slate-600">
-                  Example intelligence
-                </p>
-              </div>
-
-              <p className="mt-7 text-2xl font-bold leading-8">
-                Your strongest opportunities currently sit at the intersection
-                of{" "}
-                <span className="text-cyan-300">AI + Content + English.</span>
-              </p>
-
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                  Strategic signal
-                </p>
-
-                <p className="mt-3 text-sm leading-6 text-slate-400">
-                  Consider strengthening your portfolio around AI-assisted
-                  content workflows before expanding into a new specialization.
-                </p>
-              </div>
-
-              <p className="mt-5 text-[10px] leading-5 text-slate-600">
-                Example interface only. Live intelligence will be connected
-                later.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="start" className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-cyan-400/[0.03]" />
-
-        <div className="relative mx-auto max-w-4xl px-6 py-28 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
-            Your Next Move Starts Here
-          </p>
-
-          <h2 className="mt-6 text-5xl font-black tracking-[-0.05em] sm:text-7xl">
-            Stop applying blindly.
-            <br />
-            <span className="text-cyan-300">Start moving deliberately.</span>
-          </h2>
-
-          <p className="mx-auto mt-7 max-w-xl leading-7 text-slate-500">
-            Build a smarter freelance workflow with intelligence working
-            alongside you.
-          </p>
-
-          <a
-            href="/dashboard"
-            className="mt-9 inline-flex rounded-xl bg-cyan-300 px-8 py-4 text-sm font-black text-slate-950 hover:bg-cyan-200"
-          >
-            Enter FreelanceForge →
-          </a>
-        </div>
-      </section>
-
-      <footer className="border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="grid gap-10 md:grid-cols-3">
-            <div>
-              <div className="text-lg font-bold">
-                Freelance<span className="text-cyan-300">Forge</span>{" "}
-                <span className="text-slate-600">AI</span>
-              </div>
-
-              <p className="mt-4 text-sm text-slate-600">
-                Discover. Understand. Execute.
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Platform
-              </p>
-
-              <div className="mt-4 space-y-3 text-sm text-slate-600">
-                <a href="#features" className="block hover:text-white">
-                  Features
-                </a>
-                <a href="#intelligence" className="block hover:text-white">
-                  Intelligence
-                </a>
-                <a href="#how-it-works" className="block hover:text-white">
-                  How It Works
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Contact
-              </p>
-
-              <div className="mt-4 space-y-3 text-sm">
-                <a
-                  href="mailto:jamzyblaq@gmail.com"
-                  className="block break-all text-slate-600 hover:text-cyan-300"
-                >
-                  jamzyblaq@gmail.com
-                </a>
-
-                <a
-                  href="mailto:thomasryanbennett@gmail.com"
-                  className="block break-all text-slate-600 hover:text-cyan-300"
-                >
-                  thomasryanbennett@gmail.com
-                </a>
-
-                <a
-                  href="mailto:delahcruhz@gmail.com"
-                  className="block break-all text-slate-600 hover:text-cyan-300"
-                >
-                  delahcruhz@gmail.com
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-10 border-t border-white/10 pt-6 text-xs text-slate-700">
-            © 2026 FreelanceForge AI. All rights reserved.
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="hover:text-white transition">Terms</Link>
+            <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
+            <span>Built by the founder</span>
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

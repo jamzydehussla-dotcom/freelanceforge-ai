@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "src/lib/supabase/proxy. ts", "src/lib/supabase/server.ts", "src/middleware.ts"  ],
+  ],
   "exclude": ["node_modules"]
 }

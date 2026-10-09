@@ -1,270 +1,187 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-  event.preventDefault();
+    event.preventDefault();
+    setError("");
+    setSuccess("");
 
-  const form = new FormData(event.currentTarget);
+    const form = new FormData(event.currentTarget);
+    const fullName = String(form.get("fullName") || "").trim();
+    const email = String(form.get("email") || "").trim();
+    const password = String(form.get("password") || "");
+    const confirmPassword = String(form.get("confirmPassword") || "");
+    const terms = form.get("terms");
 
-  const fullName = String(form.get("fullName") || "").trim();
-  const email = String(form.get("email") || "").trim();
-  const password = String(form.get("password") || "");
-  const confirmPassword = String(form.get("confirmPassword") || "");
-  const termsAccepted = form.get("terms") === "on";
+    if (!fullName || !email || !password || !confirmPassword) {
+      setError("Please complete all fields.");
+      return;
+    }
 
-  if (!fullName || !email || !password || !confirmPassword) {
-    alert("Please complete all fields.");
-    return;
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!terms) {
+      setError("Please accept the Terms and Privacy Policy.");
+      return;
+    }
+
+    setLoading(true);
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    });
+    setLoading(false);
+
+    if (signUpError) {
+      setError(signUpError.message);
+      return;
+    }
+
+    setSuccess("Account created. Please check your email to verify.");
   }
 
-  if (password !== confirmPassword) {
-    alert("Passwords do not match.");
-    return;
-  }
-
-  if (!termsAccepted) {
-    alert("Please accept the Terms and Privacy Policy.");
-    return;
-  }
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName,
-      },
-    },
-  });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  alert("Account created. Please check your email to verify your account.");
-}
+  const inputClass =
+    "w-full rounded-lg border border-violet-500/20 bg-[#12062a] px-3 py-2.5 text-sm text-white placeholder-white/30 outline-none transition focus:border-cyan-400/70 focus:shadow-[0_0_15px_-2px_rgba(34,211,238,0.6)]";
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.05fr_0.95fr]">
-        {/* Forge Identity */}
-        <section className="relative hidden overflow-hidden border-r border-white/10 px-10 py-12 lg:flex lg:flex-col lg:justify-between lg:px-16 lg:py-16">
-          <div className="absolute -left-32 top-20 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl" />
-          <div className="absolute bottom-10 right-0 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+    <main className="relative min-h-screen overflow-hidden bg-[#14082a] text-white flex items-center justify-center px-4 py-12">
+      <div className="pointer-events-none absolute -top-40 -left-40 h-[520px] w-[520px] rounded-full bg-cyan-500/20 blur-[130px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[520px] w-[520px] rounded-full bg-pink-500/20 blur-[130px]" />
+      <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 h-[420px] w-[420px] rounded-full bg-violet-600/15 blur-[120px]" />
 
-          <div className="relative">
-            <p className="text-sm font-bold tracking-[0.35em] text-cyan-400">
-              FORGE
-            </p>
-
-            <p className="mt-2 text-sm text-slate-500">
-              Freelance Forge AI
-            </p>
+      <div className="relative w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <img
+              src="/forge-logo.svg"
+              alt="FORGE"
+              width={56}
+              height={56}
+              className="drop-shadow-[0_0_22px_rgba(139,92,246,0.75)]"
+            />
           </div>
-
-          <div className="relative max-w-xl">
-            <p className="text-xs font-semibold tracking-[0.25em] text-slate-500">
-              YOUR PROFESSIONAL WORKSPACE
-            </p>
-
-            <h1 className="mt-6 text-5xl font-bold tracking-tight xl:text-6xl">
-              Build your freelance career around your real potential.
-            </h1>
-
-            <p className="mt-7 max-w-lg text-base leading-8 text-slate-400">
-              One workspace for your professional profile, opportunities,
-              applications and AI-powered career tools.
-            </p>
-
-            <div className="mt-10 space-y-4">
-              <div className="flex items-center gap-3 text-sm text-slate-300">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
-                  ✓
-                </span>
-                Your data stays connected to your account
-              </div>
-
-              <div className="flex items-center gap-3 text-sm text-slate-300">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
-                  ✓
-                </span>
-                Start with the Free plan
-              </div>
-
-              <div className="flex items-center gap-3 text-sm text-slate-300">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
-                  ✓
-                </span>
-                Upgrade when you need more
-              </div>
-            </div>
-          </div>
-
-          <p className="relative text-xs text-slate-600">
-            Freelance Forge AI
+          <h1 className="text-3xl font-semibold text-white">Create your account</h1>
+          <p className="text-sm text-violet-200/60 mt-2">
+            Begin building your freelance future.
           </p>
-        </section>
+        </div>
 
-        {/* Sign Up */}
-        <section className="flex items-center px-6 py-10 sm:px-10 lg:px-16">
-          <div className="mx-auto w-full max-w-md">
-            <div className="mb-10 lg:hidden">
-              <p className="text-sm font-bold tracking-[0.35em] text-cyan-400">
-                FORGE
-              </p>
-              <p className="mt-2 text-sm text-slate-500">
-                Freelance Forge AI
-              </p>
+        <div
+          className="rounded-2xl p-[1px] shadow-[0_0_50px_-15px_rgba(139,92,246,0.55)]"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(34,211,238,0.55), rgba(139,92,246,0.35) 50%, rgba(236,72,153,0.55))",
+          }}
+        >
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 rounded-2xl bg-[#1a0d3a]/85 backdrop-blur-xl p-6"
+          >
+            <div>
+              <label className="block text-xs text-violet-200/70 mb-1.5">Full name</label>
+              <input
+                name="fullName"
+                type="text"
+                placeholder="Your name"
+                className={inputClass}
+              />
             </div>
 
             <div>
-              <p className="text-xs font-semibold tracking-[0.25em] text-cyan-400">
-                CREATE YOUR ACCOUNT
-              </p>
-
-              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-                Start building your Forge workspace.
-              </h2>
-
-              <p className="mt-4 text-sm leading-6 text-slate-500">
-                Create your account and keep your professional workspace
-                connected to you.
-              </p>
+              <label className="block text-xs text-violet-200/70 mb-1.5">Email</label>
+              <input
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                className={inputClass}
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-9 space-y-5">
-              <div>
-                <label
-                  htmlFor="fullName"
-                  className="mb-2 block text-sm font-medium text-slate-300"
-                >
-                  Full Name
-                </label>
-
-                  <input
-  id="fullName"
-  name="fullName"
-  type="text"
-  autoComplete="name"
-  placeholder="Your full name"
-  className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[0.06]"
-/>
-         <div>
-            
-            </div>
-            <label
-                  htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-slate-300"
-                >
-                  Email Address
-                </label>
-
+            <div>
+              <label className="block text-xs text-violet-200/70 mb-1.5">Password</label>
+              <div className="relative">
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[0.06]"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create a password"
+                  className={inputClass + " pr-16"}
                 />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className="mb-2 block text-sm font-medium text-slate-300"
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400/80 hover:text-cyan-300"
                 >
-                  Password
-                </label>
-
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="new-password"
-                    placeholder="Create a password"
-                    className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 pr-20 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[0.06]"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 transition hover:text-cyan-300"
-                  >
-                    {showPassword ? "Hide" : "Show"}
-                  </button>
-                </div>
+                  {showPassword ? "Hide" : "Show"}
+                </button>
               </div>
+            </div>
 
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="mb-2 block text-sm font-medium text-slate-300"
-                >
-                  Confirm Password
-                </label>
+            <div>
+              <label className="block text-xs text-violet-200/70 mb-1.5">Confirm password</label>
+              <input
+                name="confirmPassword"
+                type={showPassword ? "text" : "password"}
+                placeholder="Repeat your password"
+                className={inputClass}
+              />
+            </div>
 
-                <div className="relative">
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    autoComplete="new-password"
-                    placeholder="Confirm your password"
-                    className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 pr-20 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:bg-white/[0.06]"
-                  />
+            <label className="flex items-start gap-2 text-xs text-violet-200/70">
+              <input name="terms" type="checkbox" className="mt-0.5 accent-cyan-400" />
+              <span>I agree to the <Link href="/terms" target="_blank" className="text-cyan-400 hover:text-cyan-300 transition">Terms</Link> and <Link href="/privacy" target="_blank" className="text-cyan-400 hover:text-cyan-300 transition">Privacy Policy</Link>.</span>
+            </label>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 transition hover:text-cyan-300"
-                  >
-                    {showConfirmPassword ? "Hide" : "Show"}
-                  </button>
-                </div>
-              </div>
+            {error && (
+              <p className="text-xs text-red-300 bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2 shadow-[0_0_15px_-4px_rgba(239,68,68,0.7)]">
+                {error}
+              </p>
+            )}
 
-              <label className="flex items-start gap-3 pt-1 text-sm text-slate-500">
-                <input
-  type="checkbox"
-  name="terms"
-  className="mt-1 h-4 w-4 rounded border-white/20 bg-white/[0.04]"
-/>
+            {success && (
+              <p className="text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/40 rounded-lg px-3 py-2 shadow-[0_0_15px_-4px_rgba(16,185,129,0.7)]">
+                {success}
+              </p>
+            )}
 
-                <span className="leading-6">
-                  I agree to the Terms and Privacy Policy.
-                </span>
-              </label>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg py-2.5 text-sm font-semibold text-black transition hover:brightness-110 disabled:opacity-60"
+              style={{
+                background:
+                  "linear-gradient(90deg, #22d3ee, #8b5cf6 50%, #ec4899)",
+                boxShadow: "0 0 25px -6px rgba(34,211,238,0.7)",
+              }}
+            >
+              {loading ? "Creating account..." : "Create account"}
+            </button>
 
-              <button
-                type="submit"
-                className="w-full rounded-2xl bg-cyan-400 px-5 py-3.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
-              >
-                Create My Forge Account
-              </button>
-            </form>
-
-            <p className="mt-8 text-center text-sm text-slate-500">
+            <p className="text-center text-xs text-violet-200/60 pt-2">
               Already have an account?{" "}
-              <a
+              <Link
                 href="/signin"
-                className="font-semibold text-cyan-400 transition hover:text-cyan-300"
+                className="text-cyan-400 hover:text-cyan-300 transition"
+                style={{ textShadow: "0 0 10px rgba(34,211,238,0.6)" }}
               >
                 Sign in
-              </a>
+              </Link>
             </p>
-          </div>
-        </section>
+          </form>
+        </div>
       </div>
     </main>
   );

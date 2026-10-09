@@ -1,487 +1,125 @@
-const toolGroups = [
-  {
-    title: "Opportunity Intelligence",
-    description: "Find and evaluate opportunities built around your strengths.",
-    tools: [
-      {
-        name: "Opportunity Radar",
-        description: "Discover relevant freelance jobs and projects.",
-        featured: true,
-        href: "/opportunities",
-      },
-      {
-        name: "Smart Matching",
-        description: "Match opportunities to your skills and experience.",
-        featured: true,
-        href: "/matching",
-      },
-      {
-        name: "Opportunity Analyzer",
-        description: "Analyze requirements, fit, risks and skill gaps.",
-        featured: true,
-        href: "/analysis",
-      },
-      {
-        name: "Opportunity Alerts",
-        description: "Stay informed about relevant new opportunities.",
-        featured: false,
-        href: "/alerts",
-      },
-    ],
-  },
-  {
-    title: "Application & Proposal Tools",
-    description: "Turn strong opportunities into stronger applications.",
-    tools: [
-      {
-        name: "Proposal Studio",
-        description: "Create tailored proposals for each opportunity.",
-        featured: true,
-        href: "/proposals",
-      },
-      {
-        name: "AI CV Builder",
-        description: "Create professional CVs for specific roles.",
-        featured: true,
-        href: "/cv-tailor",
-      },
-      {
-        name: "Application Tracker",
-        description: "Track applications and their progress.",
-        featured: false,
-        href: "/applications",
-      },
-      {
-        name: "Profile Optimizer",
-        description: "Improve your freelance profile and positioning.",
-        featured: false,
-        href: "/profile",
-      },
-    ],
-  },
-  {
-    title: "AI Career Intelligence",
-    description: "Understand your direction, performance and opportunities.",
-    tools: [
-      {
-        name: "Forge Intelligence",
-        description: "Get AI powered freelance guidance and insights.",
-        featured: true,
-        href: "/intelligence",
-      },
-      {
-        name: "Career Strategy",
-        description: "Plan your skills, specialization and career direction.",
-        featured: false,
-        href: "/career-strategy",
-      },
-      {
-        name: "Career Analytics",
-        description: "Review your application activity and progress.",
-        featured: false,
-        href: "/analytics",
-      },
-      {
-        name: "Skills Gap Analyzer",
-        description: "Identify skills to develop for target opportunities.",
-        featured: false,
-        href: "/skills-gap",
-      },
-    ],
-  },
-  {
-    title: "Freelance Business",
-    description: "Build a stronger and more organized freelance business.",
-    tools: [
-      {
-        name: "Pricing Calculator",
-        description: "Estimate project rates and potential earnings.",
-        featured: false,
-        href: "/pricing",
-      },
-      {
-        name: "Income Planner",
-        description: "Set income goals and plan expected revenue.",
-        featured: false,
-        href: "/income-planner",
-      },
-      {
-        name: "Project Manager",
-        description: "Organize client projects, tasks and deadlines.",
-        featured: false,
-        href: "/projects",
-      },
-      {
-        name: "Client Workspace",
-        description: "Organize client details and communication records.",
-        featured: false,
-        href: "/clients",
-      },
-    ],
-  },
-  {
-    title: "Productivity & Workspace",
-    description: "Keep your freelance work organized in one place.",
-    tools: [
-      {
-        name: "AI Workspace",
-        description: "A dedicated space for AI assisted freelance tasks.",
-        featured: false,
-        href: "/workspace",
-      },
-      {
-        name: "Knowledge Library",
-        description: "Save useful guides, templates and resources.",
-        featured: false,
-        href: "/library",
-      },
-      {
-        name: "Smart Scheduler",
-        description: "Organize application tasks and important dates.",
-        featured: false,
-        href: "/scheduler",
-      },
-      {
-        name: "Document Vault",
-        description: "Keep CVs, proposals and portfolio materials organized.",
-        featured: false,
-        href: "/documents",
-      },
-    ],
-  },
-];
+"use client";
 
-const stats = [
-  { label: "Saved Opportunities", value: "—" },
-  { label: "Applications", value: "—" },
-  { label: "Interviews", value: "—" },
-  { label: "Profile Strength", value: "—" },
-];
+import { useEffect, useState } from "react";
+import Sidebar from "@/components/Sidebar";
+import { supabase } from "@/lib/supabase";
 
-function ToolIcon({ name }: { name: string }) {
-  const firstLetter = name.charAt(0);
-
-  return (
-    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] text-sm font-bold text-white">
-      {firstLetter}
-    </div>
-  );
-}
+type Profile = {
+  full_name: string | null;
+  plan: string | null;
+  role: string | null;
+  account_status: string | null;
+};
 
 export default function DashboardPage() {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [profileDone, setProfileDone] = useState(false);
+  const [cvCount, setCvCount] = useState(0);
+  const [refineCount, setRefineCount] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) {
+        if (active) setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, plan, role, account_status, headline, bio")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!active) return;
+
+      const { count: cvTotal } = await supabase.from("cvs").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+      const { count: refTotal } = await supabase.from("ai_usage").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("feature", "refine");
+      if (active) { setCvCount(cvTotal ?? 0); setRefineCount(refTotal ?? 0); }
+
+      if (!error && data) {
+        setProfile(data as Profile);
+        const p = data as Profile & { headline?: string | null; bio?: string | null };
+        setProfileDone(!!(p.headline && p.bio));
+      } else {
+        setProfile({
+          full_name: (user.user_metadata?.full_name as string) || null,
+          plan: null,
+          role: null,
+          account_status: null,
+        });
+      }
+      setLoading(false);
+    })();
+    return () => { active = false; };
+  }, []);
+
+  const firstName = (profile?.full_name || "").split(" ")[0] || "";
+  const planLabel = profile?.plan
+    ? profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)
+    : "—";
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <div className="flex min-h-screen">
-        {/* Sidebar */}
-        <aside className="hidden w-72 shrink-0 border-r border-white/10 bg-slate-950 lg:flex lg:flex-col">
-          <div className="border-b border-white/10 px-6 py-6">
-            <a href="/dashboard" className="block">
-              <div className="text-xl font-bold tracking-tight">
-                Freelance<span className="text-cyan-400">Forge</span>
-              </div>
-              <div className="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
-                AI
-              </div>
-            </a>
+    <div className="min-h-screen bg-[#0f0524] text-white flex">
+      <Sidebar planLabel={loading ? "…" : planLabel} />
+
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="border-b border-violet-500/15 px-6 md:px-10 py-5 flex items-center justify-between bg-[#13072b]/60 backdrop-blur-xl">
+          <div className="flex items-center gap-3">
+            <img src="/forge-logo.svg" alt="FORGE" width={26} height={26} className="md:hidden drop-shadow-[0_0_12px_rgba(139,92,246,0.7)]" />
+            <h1 className="text-lg font-semibold tracking-tight">Command Center</h1>
           </div>
-
-          <nav className="flex-1 space-y-1 px-4 py-6">
-            <div className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Workspace
-            </div>
-
-            <a
-              href="/dashboard"
-              className="flex items-center gap-3 rounded-xl bg-white/[0.08] px-4 py-3 text-sm font-semibold text-white"
-            >
-              <span className="h-2 w-2 rounded-full bg-cyan-400" />
-              Command Center
-            </a>
-
-            <a
-              href="/opportunities"
-              className="flex items-center rounded-xl px-4 py-3 text-sm text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              Opportunities
-            </a>
-
-            <a
-              href="/matching"
-              className="flex items-center rounded-xl px-4 py-3 text-sm text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              AI Matching
-            </a>
-
-            <a
-              href="/analysis"
-              className="flex items-center rounded-xl px-4 py-3 text-sm text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              Analysis
-            </a>
-
-            <a
-              href="/alerts"
-              className="flex items-center rounded-xl px-4 py-3 text-sm text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              Alerts
-            </a>
-
-            <a
-              href="/proposals"
-              className="flex items-center rounded-xl px-4 py-3 text-sm text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              Proposals
-            </a>
-
-            <a
-              href="/cv-tailor"
-              className="flex items-center rounded-xl px-4 py-3 text-sm text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              CV Tailor
-            </a>
-
-            <div className="my-6 border-t border-white/10" />
-
-            <div className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Account
-            </div>
-
-            <a
-              href="/profile"
-              className="flex items-center rounded-xl px-4 py-3 text-sm text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              Profile
-            </a>
-
-            <a
-              href="/settings"
-              className="flex items-center rounded-xl px-4 py-3 text-sm text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              Settings
-            </a>
-
-            <a
-              href="/support"
-              className="flex items-center rounded-xl px-4 py-3 text-sm text-slate-400 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              Support
-            </a>
-          </nav>
-
-          <div className="p-4">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-xs font-medium text-slate-500">Current Plan</p>
-              <div className="mt-2 flex items-center justify-between">
-                <span className="font-semibold text-white">Free</span>
-                <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-300">
-                  Active
-                </span>
-              </div>
-
-              <a
-                href="/plans"
-                className="mt-4 block text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
-              >
-                Manage Plan →
-              </a>
-
-              <div className="mt-4 border-t border-white/10 pt-3">
-                <p className="text-[11px] leading-5 text-slate-500">
-                  Available plans: Free, Elite, Pro and Legend.
-                </p>
-              </div>
-            </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-violet-200/60">{loading ? "" : firstName ? `Welcome, ${firstName}` : "Welcome"}</span>
+            {!loading && profile?.plan && (
+              <span className="text-[10px] tracking-[0.15em] uppercase text-cyan-300 border border-cyan-400/30 rounded px-2 py-1">{planLabel}</span>
+            )}
           </div>
-        </aside>
+        </header>
 
-        {/* Main content */}
-        <section className="min-w-0 flex-1">
-          {/* Mobile header */}
-          <header className="border-b border-white/10 bg-slate-950/90 px-5 py-5 backdrop-blur lg:px-10">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="text-sm font-medium text-cyan-300">
-                  Freelance Forge AI
-                </div>
-                <h1 className="mt-1 text-xl font-bold tracking-tight text-white lg:text-2xl">
-                  Command Center
-                </h1>
+        <main className="flex-1 px-6 md:px-10 py-8 space-y-8 max-w-6xl w-full">
+          <section>
+            <p className="text-sm text-violet-200/60 max-w-2xl">Your workspace is ready. Nothing here is invented — this is what Forge actually knows so far.</p>
+          </section>
+
+          <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: "Profile", value: profileDone ? "Set up" : "Not set up" },
+              { label: "CVs", value: cvCount + (cvCount === 1 ? " saved" : " saved") },
+              { label: "Refinements", value: refineCount + " run" },
+              { label: "Alerts", value: "0 unread" },
+            ].map((card) => (
+              <div key={card.label} className="rounded-xl border border-violet-500/20 bg-[#170a34]/70 backdrop-blur-sm p-5">
+                <p className="text-[10px] tracking-[0.18em] uppercase text-violet-300/50 mb-2">{card.label}</p>
+                <p className="text-lg font-medium text-white/85">{card.value}</p>
               </div>
+            ))}
+          </section>
 
-              <div className="flex items-center gap-3">
-                <a
-                  href="/alerts"
-                  aria-label="Notifications"
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-300 transition hover:bg-white/[0.08] hover:text-white"
-                >
-                  •
-                </a>
-
-                <div className="hidden items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2 pr-4 sm:flex">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 text-xs font-bold text-slate-950">
-                    U
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-white">Freelancer</p>
-                    <p className="text-[10px] text-slate-500">Free Plan</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <nav className="mt-5 flex gap-2 overflow-x-auto lg:hidden">
-              {["Command Center", "Opportunities", "Matching", "Analysis", "Alerts"].map(
-                (item, index) => (
-                  <a
-                    key={item}
-                    href={
-                      index === 0
-                        ? "/dashboard"
-                        : index === 1
-                          ? "/opportunities"
-                          : index === 2
-                            ? "/matching"
-                            : index === 3
-                              ? "/analysis"
-                              : "/alerts"
-                    }
-                    className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-medium ${
-                      index === 0
-                        ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-300"
-                        : "border-white/10 bg-white/[0.03] text-slate-400"
-                    }`}
-                  >
-                    {item}
-                  </a>
-                ),
-              )}
-            </nav>
-          </header>
-
-          <div className="mx-auto max-w-7xl px-5 py-8 lg:px-10 lg:py-10">
-            {/* Welcome */}
-            <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/[0.12] via-slate-900 to-blue-600/[0.08] p-7 lg:p-10">
-              <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl" />
-              <div className="absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl" />
-
-              <div className="relative max-w-3xl">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
-                  Welcome back
-                </p>
-
-                <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                  Your next move starts here.
-                </h2>
-
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">
-                  Your freelance activity and tools in one workspace.
-                </p>
-              </div>
-            </section>
-
-            {/* Stats */}
-            <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-white/10 bg-white/[0.035] p-5"
-                >
-                  <p className="text-sm text-slate-500">{stat.label}</p>
-                  <p className="mt-3 text-3xl font-bold text-white">{stat.value}</p>
-                  <p className="mt-2 text-xs text-slate-600">
-                    Live figures will appear when connected.
-                  </p>
-                </div>
-              ))}
-            </section>
-
-            {/* Tools */}
-            <section className="mt-12">
-              <div className="mb-8">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">
-                  Your tools
-                </p>
-                <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                  Everything you need to move forward
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                  Explore the Forge workspace and use the tools that matter most to your
-                  freelance career.
-                </p>
-              </div>
-
-              <div className="space-y-10">
-                {toolGroups.map((group) => (
-                  <section key={group.title}>
-                    <div className="mb-4">
-                      <h3 className="text-lg font-bold text-white">{group.title}</h3>
-                      <p className="mt-1 text-sm text-slate-500">{group.description}</p>
+          <section className="rounded-2xl p-[1px]" style={{ background: "linear-gradient(135deg, rgba(34,211,238,0.35), rgba(139,92,246,0.25) 50%, rgba(236,72,153,0.35))" }}>
+            <div className="rounded-2xl bg-[#170a34]/90 backdrop-blur-xl p-7">
+              <h2 className="text-base font-semibold mb-1.5">Provide the inputs. FORGE does the rest.</h2>
+              <p className="text-sm text-violet-200/55 mb-6 max-w-xl">FORGE works from what you give it. Some outputs are live now - others unlock as the platform is built.</p>
+              <ul className="space-y-3">
+                {[{ text: "FORGE learns your professional profile", ready: true }, { text: "FORGE analyses your CV against a target", ready: true }, { text: "FORGE surfaces matches worth your time", ready: false }].map((step, i) => (
+                  <li key={step.text} className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg border border-violet-500/20 bg-[#12062a]/60">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-cyan-300/70 font-mono">0{i + 1}</span>
+                      <span className="text-sm text-white/85">{step.text}</span>
                     </div>
-
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                      {group.tools.map((tool) => (
-                        <a
-                          key={tool.name}
-                          href={tool.href}
-                          className={`group rounded-2xl border p-5 transition duration-200 hover:-translate-y-0.5 hover:bg-white/[0.06] ${
-                            tool.featured
-                              ? "border-cyan-400/20 bg-gradient-to-br from-cyan-400/[0.08] to-white/[0.025]"
-                              : "border-white/10 bg-white/[0.025]"
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <ToolIcon name={tool.name} />
-
-                            {tool.featured && (
-                              <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-cyan-300">
-                                Forge
-                              </span>
-                            )}
-                          </div>
-
-                          <h4 className="mt-5 font-semibold text-white group-hover:text-cyan-300">
-                            {tool.name}
-                          </h4>
-
-                          <p className="mt-2 text-sm leading-6 text-slate-500">
-                            {tool.description}
-                          </p>
-
-                          <div className="mt-5 text-xs font-semibold text-slate-600 transition group-hover:text-cyan-300">
-                            Explore →
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                  </section>
+                    {step.ready ? (<span className="text-[9px] tracking-wider uppercase text-cyan-300 border border-cyan-400/30 rounded px-1.5 py-0.5">Open</span>) : (<span className="text-[9px] tracking-wider uppercase text-violet-300/45 border border-violet-500/25 rounded px-1.5 py-0.5">Coming Soon</span>)}
+                  </li>
                 ))}
-              </div>
-            </section>
+              </ul>
+            </div>
+          </section>
 
-            {/* Roadmap */}
-            <section className="mt-12 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-6">
-              <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                    Future roadmap
-                  </p>
-                  <h3 className="mt-2 text-lg font-bold text-white">
-                    More Forge intelligence is coming.
-                  </h3>
-                  <p className="mt-2 text-sm text-slate-500">
-                    Opportunity Autopilot and Opportunity War Room remain future
-                    concepts and are not active tools yet.
-                  </p>
-                </div>
-
-                <span className="w-fit rounded-full border border-white/10 px-4 py-2 text-xs font-semibold text-slate-500">
-                  Roadmap
-                </span>
-              </div>
-            </section>
-          </div>
-        </section>
+          <p className="text-center text-[11px] text-violet-200/25 tracking-wide pt-4">Freelance Forge AI — by FORGE</p>
+        </main>
       </div>
-    </main>
+    </div>
   );
 }
