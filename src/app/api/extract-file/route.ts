@@ -39,9 +39,10 @@ export async function POST(request: NextRequest) {
 
   try {
     if (name.endsWith(".pdf")) {
-      const pdfParse = (await import("pdf-parse/lib/pdf-parse.js")).default;
-      const data = await pdfParse(buffer);
-      const text = (data.text || "").trim();
+      const { extractText, getDocumentProxy } = await import("unpdf");
+      const pdf = await getDocumentProxy(new Uint8Array(buffer));
+      const { text: rawText } = await extractText(pdf, { mergePages: true });
+      const text = (rawText || "").trim();
       if (!text) return NextResponse.json({ ok: false, error: "Could not read text from this PDF. It may be a scanned image." }, { status: 400 });
       return NextResponse.json({ ok: true, text });
     }
