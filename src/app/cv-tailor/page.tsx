@@ -40,6 +40,7 @@ const INTENTS = [
 const QUICK_DIRECTIONS = ["Shorter", "More technical", "More leadership", "Warmer tone", "Less corporate"];
 
 export default function CVTailorPage() {
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<Mode>("Upload");
   const [targetRole, setTargetRole] = useState("");
   const [company, setCompany] = useState("");
@@ -332,6 +333,28 @@ export default function CVTailorPage() {
       }
       setLoadedOnce(true);
     })();
+  }, []);
+
+  useEffect(() => {
+    if (!searchParams) return;
+    const r = searchParams.get("role");
+    const cmp = searchParams.get("company");
+    const ind = searchParams.get("industry");
+    const sen = searchParams.get("seniority");
+    const emp = searchParams.get("employmentType");
+    const kr = searchParams.get("keyRequirements");
+    const jd = searchParams.get("jobDescription");
+    if (r || cmp || ind || sen || emp || kr || jd) {
+      if (r) setTargetRole(r);
+      if (cmp) setCompany(cmp);
+      if (ind) setIndustry(ind);
+      if (sen) setSeniority(sen);
+      if (emp) setEmploymentType(emp);
+      if (kr) setKeyRequirements(kr);
+      if (jd) setJobDescription(jd);
+      setSourceMode("Job description");
+    }
+  }, [searchParams]);
     return () => { active = false; };
   }, []);
 
