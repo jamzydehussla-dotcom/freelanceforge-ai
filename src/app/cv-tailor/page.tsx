@@ -355,8 +355,6 @@ export default function CVTailorPage() {
       setSourceMode("Job description");
     }
   }, [searchParams]);
-    return () => { active = false; };
-  }, []);
 
   useEffect(() => {
     if (!loadedOnce) return;
