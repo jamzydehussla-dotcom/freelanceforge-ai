@@ -40,7 +40,6 @@ const INTENTS = [
 const QUICK_DIRECTIONS = ["Shorter", "More technical", "More leadership", "Warmer tone", "Less corporate"];
 
 export default function CVTailorPage() {
-  const searchParams = useSearchParams();
   const [mode, setMode] = useState<Mode>("Upload");
   const [targetRole, setTargetRole] = useState("");
   const [company, setCompany] = useState("");
@@ -336,14 +335,15 @@ export default function CVTailorPage() {
   }, []);
 
   useEffect(() => {
-    if (!searchParams) return;
-    const r = searchParams.get("role");
-    const cmp = searchParams.get("company");
-    const ind = searchParams.get("industry");
-    const sen = searchParams.get("seniority");
-    const emp = searchParams.get("employmentType");
-    const kr = searchParams.get("keyRequirements");
-    const jd = searchParams.get("jobDescription");
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const r = params.get("role");
+    const cmp = params.get("company");
+    const ind = params.get("industry");
+    const sen = params.get("seniority");
+    const emp = params.get("employmentType");
+    const kr = params.get("keyRequirements");
+    const jd = params.get("jobDescription");
     if (r || cmp || ind || sen || emp || kr || jd) {
       if (r) setTargetRole(r);
       if (cmp) setCompany(cmp);
@@ -354,7 +354,7 @@ export default function CVTailorPage() {
       if (jd) setJobDescription(jd);
       setSourceMode("Job description");
     }
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     if (!loadedOnce) return;
