@@ -184,3 +184,88 @@ export function parseRefine(text: string): { ok: true; data: RefineResult } | { 
     },
   };
 }
+
+
+export type MatchingFactor = { score: number; weight: number; reasoning: string };
+export type MatchingRecommendation = { priority: string; action: string };
+
+export type MatchingResult = {
+  overallScore: number;
+  verdict: string;
+  confidence: number;
+  reasoning: string;
+  factors: {
+    skills: MatchingFactor;
+    experience: MatchingFactor;
+    seniority: MatchingFactor;
+    industry: MatchingFactor;
+    workType: MatchingFactor;
+    positioning: MatchingFactor;
+  };
+  strengths: string[];
+  gaps: string[];
+  recommendations: MatchingRecommendation[];
+};
+
+const MATCHING_FACTOR_KEYS = ["skills","experience","seniority","industry","workType","positioning"] as const;
+
+export function parseMatching(text: string): { ok: true; data: MatchingResult } | { ok: false; error: string } {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stripFences(text));
+  } catch {
+    return { ok: false, error: "FORGE returned invalid JSON." };
+  }
+
+  if (!parsed || typeof parsed !== "object") return { ok: false, error: "Unexpected response shape." };
+  const obj = parsed as Record<string, unknown>;
+
+  if (typeof obj.overallScore !== "number") return { ok: false, error: "Missing overallScore." };
+  if (typeof obj.verdict !== "string") return { ok: false, error: "Missing verdict." };
+  if (typeof obj.reasoning !== "string") return { ok: false, error: "Missing reasoning." };
+
+  const confidence = typeof obj.confidence === "number" ? Math.max(0, Math.min(100, Math.round(obj.confidence))) : 75;
+
+  const factorsRaw = obj.factors as Record<string, unknown> | undefined;
+  if (!factorsRaw) return { ok: false, error: "Missing factors." };
+  const factors: Record<string, MatchingFactor> = {};
+  for (const k of MATCHING_FACTOR_KEYS) {
+    const v = factorsRaw[k] as Record<string, unknown> | undefined;
+    if (!v || typeof v.score !== "number" || typeof v.reasoning !== "string") {
+      return { ok: false, error: "Invalid factor: " + k };
+    }
+    factors[k] = {
+      score: Math.max(0, Math.min(100, Math.round(v.score))),
+      weight: typeof v.weight === "number" ? Math.max(1, Math.min(10, Math.round(v.weight))) : 5,
+      reasoning: v.reasoning,
+    };
+  }
+
+  const strengths = Array.isArray(obj.strengths) ? (obj.strengths as unknown[]).filter((s) => typeof s === "string") as string[] : [];
+  const gaps = Array.isArray(obj.gaps) ? (obj.gaps as unknown[]).filter((s) => typeof s === "string") as string[] : [];
+
+  const recs: MatchingRecommendation[] = [];
+  if (Array.isArray(obj.recommendations)) {
+    for (const r of obj.recommendations as unknown[]) {
+      if (!r || typeof r !== "object") continue;
+      const rr = r as Record<string, unknown>;
+      if (typeof rr.priority === "string" && typeof rr.action === "string") {
+        recs.push({ priority: rr.priority, action: rr.action });
+      }
+    }
+  }
+
+  return {
+    ok: true,
+    data: {
+      overallScore: Math.max(0, Math.min(100, Math.round(obj.overallScore))),
+      verdict: obj.verdict,
+      confidence,
+      reasoning: obj.reasoning,
+      factors: factors as MatchingResult["factors"],
+      strengths,
+      gaps,
+      recommendations: recs,
+    },
+  };
+}

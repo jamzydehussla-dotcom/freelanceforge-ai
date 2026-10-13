@@ -165,3 +165,60 @@ export function buildRefinePrompt(input: RefineInput): string {
   p.push("- keyChanges: an array of 3-5 short strings explaining what you changed and why");
   return p.join("\n");
 }
+
+
+type MatchingInput = {
+  cvText: string;
+  role: string;
+  company: string;
+  industry: string;
+  seniority: string;
+  employmentType: string;
+  workArrangement: string;
+  keyRequirements: string;
+  jobDescription: string;
+};
+
+export function buildMatchingPrompt(input: MatchingInput): string {
+  const p: string[] = [];
+  p.push("You are FORGE, the AI of the FORGE ecosystem. Evaluate how well a CV matches a specific opportunity.");
+  p.push("");
+  p.push("CRITICAL RULES:");
+  p.push("- Reference only what appears in the CV text or the opportunity below.");
+  p.push("- Never invent skills, experience, or qualifications the CV does not contain.");
+  p.push("- Be honest. If the CV is a weak match, say so with specific reasoning.");
+  p.push("- Return only valid JSON. No commentary. No markdown fences.");
+  p.push("");
+  p.push("CV TEXT:");
+  p.push("---");
+  p.push(input.cvText || "(no CV text provided)");
+  p.push("---");
+  p.push("");
+  p.push("OPPORTUNITY:");
+  p.push("Role: " + (input.role || "(not provided)"));
+  p.push("Company: " + (input.company || "(not provided)"));
+  p.push("Industry: " + (input.industry || "(not provided)"));
+  p.push("Seniority: " + (input.seniority || "(not provided)"));
+  p.push("Employment type: " + (input.employmentType || "(not provided)"));
+  p.push("Work arrangement: " + (input.workArrangement || "(not provided)"));
+  p.push("Key requirements: " + (input.keyRequirements || "(not provided)"));
+  p.push("Job description: " + (input.jobDescription || "(not provided)"));
+  p.push("");
+  p.push("Return ONLY valid JSON with this exact structure:");
+  p.push("");
+  p.push("- overallScore: integer 0-100 representing overall match quality");
+  p.push("- verdict: one of \"strong\", \"good\", \"moderate\", \"weak\"");
+  p.push("- confidence: integer 0-100 representing how confident you are given the available information");
+  p.push("- reasoning: 2-4 sentence explanation of the overall score");
+  p.push("- factors: object with these keys, each { score: 0-100, weight: 1-10, reasoning: short string }:");
+  p.push("  - skills");
+  p.push("  - experience");
+  p.push("  - seniority");
+  p.push("  - industry");
+  p.push("  - workType");
+  p.push("  - positioning");
+  p.push("- strengths: array of 3-6 short strings describing what makes this a good fit");
+  p.push("- gaps: array of 2-6 short strings describing what is missing or weak");
+  p.push("- recommendations: array of 3-6 objects, each { priority: \"high\"|\"medium\"|\"low\", action: short string }");
+  return p.join("\n");
+}

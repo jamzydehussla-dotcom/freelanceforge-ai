@@ -10,6 +10,7 @@ export type Feature =
   | "matching"
   | "analysis"
   | "proposals"
+  | "matching"
   | "tracker"
   | "profileOptimizer"
   | "careerStrategy"
