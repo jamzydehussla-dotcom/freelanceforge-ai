@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { forgeGenerate, type ForgeKind } from "@/lib/ai/forge";
-import { buildDiagnosePrompt, buildExtractPrompt, buildRefinePrompt, buildMatchingPrompt } from "@/lib/ai/prompts";
-import { parseDiagnose, parseExtract, parseRefine, parseMatching } from "@/lib/ai/validate";
+import { buildDiagnosePrompt, buildExtractPrompt, buildRefinePrompt, buildMatchingPrompt, buildAnalysisPrompt } from "@/lib/ai/prompts";
+import { parseDiagnose, parseExtract, parseRefine, parseMatching, parseAnalysis } from "@/lib/ai/validate";
 import { getUserMemory, buildMemoryContext } from "@/lib/ai/memory";
 import { checkFeatureAccess } from "@/lib/gating";
 import type { Feature } from "@/lib/tiers";
@@ -82,6 +82,22 @@ export async function POST(request: NextRequest) {
       workArrangement: asString(input.workArrangement),
       keyRequirements: asString(input.keyRequirements),
       jobDescription: asString(input.jobDescription),
+    });
+  } else if (feature === "analysis") {
+    finalPrompt = buildAnalysisPrompt({
+      role: asString(input.role),
+      company: asString(input.company),
+      industry: asString(input.industry),
+      seniority: asString(input.seniority),
+      employmentType: asString(input.employmentType),
+      workArrangement: asString(input.workArrangement),
+      keyRequirements: asString(input.keyRequirements),
+      jobDescription: asString(input.jobDescription),
+      budgetMin: asString(input.budgetMin),
+      budgetMax: asString(input.budgetMax),
+      budgetCurrency: asString(input.budgetCurrency),
+      deadline: asString(input.deadline),
+      matchScore: asString(input.matchScore),
     });
   } else if (feature === "refine") {
     finalPrompt = buildRefinePrompt({
@@ -162,6 +178,14 @@ export async function POST(request: NextRequest) {
 
   if (feature === "matching") {
     const parsed = parseMatching(result.text);
+    if (!parsed.ok) {
+      return NextResponse.json({ ok: false, error: parsed.error }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, feature, data: parsed.data });
+  }
+
+  if (feature === "analysis") {
+    const parsed = parseAnalysis(result.text);
     if (!parsed.ok) {
       return NextResponse.json({ ok: false, error: parsed.error }, { status: 500 });
     }

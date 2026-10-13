@@ -269,3 +269,69 @@ export function parseMatching(text: string): { ok: true; data: MatchingResult } 
     },
   };
 }
+
+
+export type AnalysisCriterion = { score: number; reasoning: string };
+
+export type AnalysisResult = {
+  verdict: string;
+  confidence: number;
+  reasoning: string;
+  criteria: {
+    opportunityQuality: AnalysisCriterion;
+    clientSignals: AnalysisCriterion;
+    scopeClarity: AnalysisCriterion;
+    riskLevel: AnalysisCriterion;
+    effortVsReward: AnalysisCriterion;
+    strategicValue: AnalysisCriterion;
+  };
+  greenFlags: string[];
+  redFlags: string[];
+  nextAction: string;
+};
+
+const ANALYSIS_KEYS = ["opportunityQuality","clientSignals","scopeClarity","riskLevel","effortVsReward","strategicValue"] as const;
+
+export function parseAnalysis(text: string): { ok: true; data: AnalysisResult } | { ok: false; error: string } {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stripFences(text));
+  } catch {
+    return { ok: false, error: "FORGE returned invalid JSON." };
+  }
+
+  if (!parsed || typeof parsed !== "object") return { ok: false, error: "Unexpected response shape." };
+  const obj = parsed as Record<string, unknown>;
+
+  if (typeof obj.verdict !== "string") return { ok: false, error: "Missing verdict." };
+  if (typeof obj.reasoning !== "string") return { ok: false, error: "Missing reasoning." };
+  const confidence = typeof obj.confidence === "number" ? Math.max(0, Math.min(100, Math.round(obj.confidence))) : 70;
+
+  const critRaw = obj.criteria as Record<string, unknown> | undefined;
+  if (!critRaw) return { ok: false, error: "Missing criteria." };
+  const criteria: Record<string, AnalysisCriterion> = {};
+  for (const k of ANALYSIS_KEYS) {
+    const v = critRaw[k] as Record<string, unknown> | undefined;
+    if (!v || typeof v.score !== "number" || typeof v.reasoning !== "string") {
+      return { ok: false, error: "Invalid criterion: " + k };
+    }
+    criteria[k] = { score: Math.max(0, Math.min(100, Math.round(v.score))), reasoning: v.reasoning };
+  }
+
+  const green = Array.isArray(obj.greenFlags) ? (obj.greenFlags as unknown[]).filter((s) => typeof s === "string") as string[] : [];
+  const red = Array.isArray(obj.redFlags) ? (obj.redFlags as unknown[]).filter((s) => typeof s === "string") as string[] : [];
+  const nextAction = typeof obj.nextAction === "string" ? obj.nextAction : "";
+
+  return {
+    ok: true,
+    data: {
+      verdict: obj.verdict,
+      confidence,
+      reasoning: obj.reasoning,
+      criteria: criteria as AnalysisResult["criteria"],
+      greenFlags: green,
+      redFlags: red,
+      nextAction,
+    },
+  };
+}

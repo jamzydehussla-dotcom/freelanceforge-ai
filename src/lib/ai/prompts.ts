@@ -222,3 +222,63 @@ export function buildMatchingPrompt(input: MatchingInput): string {
   p.push("- recommendations: array of 3-6 objects, each { priority: \"high\"|\"medium\"|\"low\", action: short string }");
   return p.join("\n");
 }
+
+
+type AnalysisInput = {
+  role: string;
+  company: string;
+  industry: string;
+  seniority: string;
+  employmentType: string;
+  workArrangement: string;
+  keyRequirements: string;
+  jobDescription: string;
+  budgetMin: string;
+  budgetMax: string;
+  budgetCurrency: string;
+  deadline: string;
+  matchScore: string;
+};
+
+export function buildAnalysisPrompt(input: AnalysisInput): string {
+  const p: string[] = [];
+  p.push("You are FORGE, the AI of the FORGE ecosystem. Decide whether a freelancer should pursue a specific opportunity.");
+  p.push("");
+  p.push("Your job is to make a clear recommendation: pursue, consider, or skip.");
+  p.push("");
+  p.push("CRITICAL RULES:");
+  p.push("- Reference only what appears in the opportunity below.");
+  p.push("- Never invent details about the client, budget, or scope.");
+  p.push("- Be decisive. If evidence is thin, say so and recommend skipping or considering - not pursuing on hope.");
+  p.push("- Return only valid JSON. No commentary. No markdown fences.");
+  p.push("");
+  p.push("OPPORTUNITY:");
+  p.push("Role: " + (input.role || "(not provided)"));
+  p.push("Company: " + (input.company || "(not provided)"));
+  p.push("Industry: " + (input.industry || "(not provided)"));
+  p.push("Seniority: " + (input.seniority || "(not provided)"));
+  p.push("Employment type: " + (input.employmentType || "(not provided)"));
+  p.push("Work arrangement: " + (input.workArrangement || "(not provided)"));
+  p.push("Budget: " + (input.budgetMin || "?") + " - " + (input.budgetMax || "?") + " " + (input.budgetCurrency || "USD"));
+  p.push("Deadline: " + (input.deadline || "(not provided)"));
+  p.push("Match score (from prior FORGE matching): " + (input.matchScore || "(not run)"));
+  p.push("Key requirements: " + (input.keyRequirements || "(not provided)"));
+  p.push("Job description: " + (input.jobDescription || "(not provided)"));
+  p.push("");
+  p.push("Return ONLY valid JSON with this exact structure:");
+  p.push("");
+  p.push("- verdict: one of \"pursue\", \"consider\", \"skip\"");
+  p.push("- confidence: integer 0-100 (how confident you are in this verdict)");
+  p.push("- reasoning: 2-4 sentence explanation");
+  p.push("- criteria: object with these keys, each { score: 0-100, reasoning: short string }:");
+  p.push("  - opportunityQuality (is this a real, valuable opportunity?)");
+  p.push("  - clientSignals (any warning signs about the client or posting?)");
+  p.push("  - scopeClarity (is the scope clearly defined?)");
+  p.push("  - riskLevel (higher score = lower risk)");
+  p.push("  - effortVsReward (does the payoff justify the effort?)");
+  p.push("  - strategicValue (does this advance long-term positioning?)");
+  p.push("- greenFlags: array of 2-5 short strings");
+  p.push("- redFlags: array of 0-5 short strings");
+  p.push("- nextAction: one short, specific string advising the user on what to do next");
+  return p.join("\n");
+}

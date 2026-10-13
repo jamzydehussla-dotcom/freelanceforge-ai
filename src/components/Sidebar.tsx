@@ -15,7 +15,7 @@ const NAV_GROUPS = [
     items: [
       { name: "Opportunities", href: "/opportunities", ready: true },
       { name: "FORGE Matching", href: "/matching", ready: true },
-      { name: "Analysis", href: "/analysis", ready: false },
+      { name: "Analysis", href: "/analysis", ready: true },
       { name: "Alerts", href: "/alerts", ready: true },
     ],
   },
