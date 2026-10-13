@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import Toolbox from "@/components/Toolbox";
 import { supabase } from "@/lib/supabase";
+import { getTier } from "@/lib/tiers";
 
 type Profile = {
   full_name: string | null;
@@ -17,6 +19,7 @@ export default function DashboardPage() {
   const [profileDone, setProfileDone] = useState(false);
   const [cvCount, setCvCount] = useState(0);
   const [refineCount, setRefineCount] = useState(0);
+  const [role, setRole] = useState("user");
 
   useEffect(() => {
     let active = true;
@@ -42,6 +45,7 @@ export default function DashboardPage() {
 
       if (!error && data) {
         setProfile(data as Profile);
+        if ((data as any).role) setRole((data as any).role);
         const p = data as Profile & { headline?: string | null; bio?: string | null };
         setProfileDone(!!(p.headline && p.bio));
       } else {
@@ -99,23 +103,7 @@ export default function DashboardPage() {
             ))}
           </section>
 
-          <section className="rounded-2xl p-[1px]" style={{ background: "linear-gradient(135deg, rgba(34,211,238,0.35), rgba(139,92,246,0.25) 50%, rgba(236,72,153,0.35))" }}>
-            <div className="rounded-2xl bg-[#170a34]/90 backdrop-blur-xl p-7">
-              <h2 className="text-base font-semibold mb-1.5">Provide the inputs. FORGE does the rest.</h2>
-              <p className="text-sm text-violet-200/55 mb-6 max-w-xl">FORGE works from what you give it. Some outputs are live now - others unlock as the platform is built.</p>
-              <ul className="space-y-3">
-                {[{ text: "FORGE learns your professional profile", ready: true }, { text: "FORGE analyses your CV against a target", ready: true }, { text: "FORGE surfaces matches worth your time", ready: false }].map((step, i) => (
-                  <li key={step.text} className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg border border-violet-500/20 bg-[#12062a]/60">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-cyan-300/70 font-mono">0{i + 1}</span>
-                      <span className="text-sm text-white/85">{step.text}</span>
-                    </div>
-                    {step.ready ? (<span className="text-[9px] tracking-wider uppercase text-cyan-300 border border-cyan-400/30 rounded px-1.5 py-0.5">Open</span>) : (<span className="text-[9px] tracking-wider uppercase text-violet-300/45 border border-violet-500/25 rounded px-1.5 py-0.5">Coming Soon</span>)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
+          {<Toolbox userTier={getTier(profile?.plan, role)} />}
 
           <p className="text-center text-[11px] text-violet-200/25 tracking-wide pt-4">Freelance Forge AI — by FORGE</p>
         </main>
