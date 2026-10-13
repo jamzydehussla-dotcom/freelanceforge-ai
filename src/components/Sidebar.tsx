@@ -22,7 +22,7 @@ const NAV_GROUPS = [
   {
     label: "Application",
     items: [
-      { name: "Proposals", href: "/proposals", ready: false },
+      { name: "Proposals", href: "/proposals", ready: true },
       { name: "CV Tailor", href: "/cv-tailor", ready: true },
     ],
   },

@@ -335,3 +335,63 @@ export function parseAnalysis(text: string): { ok: true; data: AnalysisResult } 
     },
   };
 }
+
+
+export type ProposalResult = {
+  subjectLine: string;
+  opening: string;
+  problemUnderstanding: string;
+  proposedApproach: string;
+  relevantExperience: string;
+  timeline: string;
+  investment: string;
+  closing: string;
+  psLine: string;
+  whyThisWorks: string[];
+  beforeYouSend: string[];
+  keyChanges: string[];
+  toneMatch: number;
+  personalisationScore: number;
+};
+
+export function parseProposal(text: string): { ok: true; data: ProposalResult } | { ok: false; error: string } {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stripFences(text));
+  } catch {
+    return { ok: false, error: "FORGE returned invalid JSON." };
+  }
+
+  if (!parsed || typeof parsed !== "object") return { ok: false, error: "Unexpected response shape." };
+  const obj = parsed as Record<string, unknown>;
+
+  const stringFields = ["subjectLine","opening","problemUnderstanding","proposedApproach","relevantExperience","timeline","investment","closing","psLine"];
+  for (const f of stringFields) {
+    if (typeof obj[f] !== "string") return { ok: false, error: "Missing field: " + f };
+  }
+
+  const toStrArr = (v: unknown): string[] => Array.isArray(v) ? (v as unknown[]).filter((s) => typeof s === "string") as string[] : [];
+
+  const toneMatch = typeof obj.toneMatch === "number" ? Math.max(0, Math.min(100, Math.round(obj.toneMatch))) : 80;
+  const personalisationScore = typeof obj.personalisationScore === "number" ? Math.max(0, Math.min(100, Math.round(obj.personalisationScore))) : 75;
+
+  return {
+    ok: true,
+    data: {
+      subjectLine: obj.subjectLine as string,
+      opening: obj.opening as string,
+      problemUnderstanding: obj.problemUnderstanding as string,
+      proposedApproach: obj.proposedApproach as string,
+      relevantExperience: obj.relevantExperience as string,
+      timeline: obj.timeline as string,
+      investment: obj.investment as string,
+      closing: obj.closing as string,
+      psLine: obj.psLine as string,
+      whyThisWorks: toStrArr(obj.whyThisWorks),
+      beforeYouSend: toStrArr(obj.beforeYouSend),
+      keyChanges: toStrArr(obj.keyChanges),
+      toneMatch,
+      personalisationScore,
+    },
+  };
+}

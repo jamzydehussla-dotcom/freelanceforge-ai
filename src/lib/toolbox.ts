@@ -30,7 +30,7 @@ export const TOOLS: Tool[] = [
   { name: "Opportunity Radar", description: "Automatic discovery across platforms.", group: "Opportunity Intelligence", tier: "pro", status: "soon" },
   { name: "Opportunity Autopilot", description: "Find, evaluate, prepare, and assist — automated.", group: "Opportunity Intelligence", tier: "legend", status: "soon" },
   { name: "Opportunity War Room", description: "A strategic workspace for high-value opportunities.", group: "Opportunity Intelligence", tier: "legend", status: "soon" },
-  { name: "Proposal Studio", description: "Write stronger proposals, tailored to each client.", group: "Application & Proposal", tier: "pro", status: "soon" },
+  { name: "Proposal Studio", description: "Write stronger proposals, tailored to each client.", group: "Application & Proposal", href: "/proposals", tier: "pro", status: "live" },
   { name: "Application Tracker", description: "Track every application through its stages.", group: "Application & Proposal", tier: "pro", status: "soon" },
   { name: "Profile Optimizer", description: "Strengthen how you present yourself.", group: "Application & Proposal", tier: "pro", status: "soon" },
   { name: "SOW & Contract Forge", description: "Turn discovery calls into clear contracts.", group: "Application & Proposal", tier: "legend", status: "soon" },

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { forgeGenerate, type ForgeKind } from "@/lib/ai/forge";
-import { buildDiagnosePrompt, buildExtractPrompt, buildRefinePrompt, buildMatchingPrompt, buildAnalysisPrompt } from "@/lib/ai/prompts";
-import { parseDiagnose, parseExtract, parseRefine, parseMatching, parseAnalysis } from "@/lib/ai/validate";
+import { buildDiagnosePrompt, buildExtractPrompt, buildRefinePrompt, buildMatchingPrompt, buildAnalysisPrompt, buildProposalPrompt } from "@/lib/ai/prompts";
+import { parseDiagnose, parseExtract, parseRefine, parseMatching, parseAnalysis, parseProposal } from "@/lib/ai/validate";
 import { getUserMemory, buildMemoryContext } from "@/lib/ai/memory";
 import { checkFeatureAccess } from "@/lib/gating";
 import type { Feature } from "@/lib/tiers";
@@ -99,6 +99,24 @@ export async function POST(request: NextRequest) {
       deadline: asString(input.deadline),
       matchScore: asString(input.matchScore),
     });
+  } else if (feature === "proposal") {
+    finalPrompt = buildProposalPrompt({
+      role: asString(input.role),
+      company: asString(input.company),
+      brief: asString(input.brief),
+      keyRequirements: asString(input.keyRequirements),
+      cvText: asString(input.cvText),
+      memory: asString(input.memory),
+      analysisReasoning: asString(input.analysisReasoning),
+      matchScore: asString(input.matchScore),
+      tone: asString(input.tone),
+      positioningAngle: asString(input.positioningAngle),
+      length: asString(input.length),
+      emphasis: asString(input.emphasis),
+      strengthTags: asString(input.strengthTags),
+      customNotes: asString(input.customNotes),
+      feedback: asString(input.feedback),
+    });
   } else if (feature === "refine") {
     finalPrompt = buildRefinePrompt({
       cvText: asString(input.cvText),
@@ -115,7 +133,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "Unknown feature: " + feature }, { status: 400 });
   }
 
-  const GATED: Feature[] = ["diagnose", "extract", "refine", "matching"];
+  const GATED: Feature[] = ["diagnose", "extract", "refine", "matching", "proposals"];
   if (GATED.includes(feature as Feature)) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -186,6 +204,14 @@ export async function POST(request: NextRequest) {
 
   if (feature === "analysis") {
     const parsed = parseAnalysis(result.text);
+    if (!parsed.ok) {
+      return NextResponse.json({ ok: false, error: parsed.error }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, feature, data: parsed.data });
+  }
+
+  if (feature === "proposal") {
+    const parsed = parseProposal(result.text);
     if (!parsed.ok) {
       return NextResponse.json({ ok: false, error: parsed.error }, { status: 500 });
     }

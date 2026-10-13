@@ -282,3 +282,85 @@ export function buildAnalysisPrompt(input: AnalysisInput): string {
   p.push("- nextAction: one short, specific string advising the user on what to do next");
   return p.join("\n");
 }
+
+
+type ProposalInput = {
+  role: string;
+  company: string;
+  brief: string;
+  keyRequirements: string;
+  cvText: string;
+  memory: string;
+  analysisReasoning: string;
+  matchScore: string;
+  tone: string;
+  positioningAngle: string;
+  length: string;
+  emphasis: string;
+  strengthTags: string;
+  customNotes: string;
+  feedback: string;
+};
+
+export function buildProposalPrompt(input: ProposalInput): string {
+  const p: string[] = [];
+  p.push("You are FORGE, the AI of the FORGE ecosystem. Write a professional freelance proposal that wins work.");
+  p.push("");
+  p.push("CRITICAL RULES:");
+  p.push("- Reference only facts that appear in the user's CV, memory, or the brief below.");
+  p.push("- Never invent experience, clients, results, or credentials.");
+  p.push("- Never promise rates, timelines, or outcomes the user has not authorised.");
+  p.push("- Match the requested tone, positioning angle, and length precisely.");
+  p.push("- Be specific. Vague proposals get ignored.");
+  p.push("- Return only valid JSON. No commentary. No markdown fences.");
+  p.push("");
+  p.push("OPPORTUNITY:");
+  p.push("Role: " + (input.role || "(not provided)"));
+  p.push("Company: " + (input.company || "(not provided)"));
+  p.push("Brief: " + (input.brief || "(not provided)"));
+  p.push("Key requirements: " + (input.keyRequirements || "(not provided)"));
+  p.push("");
+  p.push("USER'S CV:");
+  p.push("---");
+  p.push(input.cvText || "(no CV provided)");
+  p.push("---");
+  p.push("");
+  p.push("USER MEMORY:");
+  p.push(input.memory || "(nothing on file)");
+  p.push("");
+  p.push("PRIOR FORGE ANALYSIS:");
+  p.push("Reasoning: " + (input.analysisReasoning || "(not run)"));
+  p.push("Match score: " + (input.matchScore || "(not run)"));
+  p.push("");
+  p.push("STRATEGY:");
+  p.push("Tone: " + (input.tone || "Professional"));
+  p.push("Positioning angle: " + (input.positioningAngle || "Specialist"));
+  p.push("Length: " + (input.length || "Standard"));
+  p.push("Emphasis: " + (input.emphasis || "Experience, Process, Value"));
+  p.push("Strength tags to feature: " + (input.strengthTags || "(none)"));
+  p.push("Custom notes: " + (input.customNotes || "(none)"));
+  if (input.feedback && input.feedback.trim()) {
+    p.push("");
+    p.push("USER FEEDBACK ON THE PREVIOUS DRAFT:");
+    p.push(input.feedback.trim());
+    p.push("Apply this feedback while respecting all CRITICAL RULES above.");
+  }
+  p.push("");
+  p.push("Return ONLY valid JSON with this exact structure:");
+  p.push("");
+  p.push("- subjectLine: a compelling subject line (max 12 words)");
+  p.push("- opening: 1-2 sentences that hook the reader. Specific, not generic.");
+  p.push("- problemUnderstanding: 2-3 sentences showing you read the brief and understand what they need.");
+  p.push("- proposedApproach: 3-5 sentences describing how you would tackle this, grounded in your real experience.");
+  p.push("- relevantExperience: 2-4 sentences highlighting the most relevant work from the CV.");
+  p.push("- timeline: 1-3 sentences describing a realistic approach to timing. Do not promise specific dates unless the brief specifies.");
+  p.push("- investment: 1-3 sentences on pricing approach. Only include rates the user has authorised. If none provided, describe approach without specific numbers.");
+  p.push("- closing: 1-2 sentences ending with a clear, low-pressure next step.");
+  p.push("- psLine: one optional PS line (empty string if not needed).");
+  p.push("- whyThisWorks: array of 3-5 short strings explaining why this proposal should resonate.");
+  p.push("- beforeYouSend: array of 3-5 short actionable strings (e.g. \"Verify the timeline with your calendar\").");
+  p.push("- keyChanges: array of 3-5 short strings describing what you did (empty array on first draft).");
+  p.push("- toneMatch: integer 0-100 (how well the tone matches the strategy)");
+  p.push("- personalisationScore: integer 0-100 (how tailored the proposal is to this specific opportunity)");
+  return p.join("\n");
+}
